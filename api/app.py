@@ -14,7 +14,7 @@ def home():
 
 @app.route("/home", methods = ['POST'])
 def helloWorld():
-    return getJson(request.data).get("hello")
-
+    #return getJson(request.data).get("hello")
+    return request.headers["Content-Type"]
 if __name__ == "__main__":
     app.run(debug = True)
