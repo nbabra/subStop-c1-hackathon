@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
 import json, requests, os, sqlite3
 from collections import OrderedDict
-import operator, urllib
+import operator, urllib, sys
 APIKEY = { 'key': '7ab1c5c2151720f0b4104d7a9a2d7b9f'}
 #----------HELPER FUNCTIONS----------------
-def getJson(incomingRequest):
+def getJSON(incomingRequest):
     requestBody =  json.loads((incomingRequest).decode("utf-8"))
     return requestBody
 def getResponseContent(response):
@@ -64,12 +64,31 @@ def getBills(customerID):
     url = "http://api.reimaginebanking.com/customers/" + customerID + "/bills?"
     url = url + urllib.urlencode(APIKEY)
     response = requests.get(url)
-    return getResponseContent(response.content)
+    #print getResponseContent(response.content)
+    return json.loads(response.content)
 
-#
-#
-# def getSubscriptions():
+def getSubscriptions(responseBody):
+    return responseBody.get("recurring_date")
 
+def createSubscription(subName, userName, date = 1):
+    f = open("/users/" + userName + "/" + subName + ".txt", w)
+    f.write(date)
+    f.close()
+    return
+
+def updateSubscription(subName, userName, date):
+    if(os.path.isfile("/users/" + userName + "/" + subName + ".txt")== False):
+        return
+    f = open("/users/" + userName + "/" + subName + ".txt", w)
+    f.write(date)
+    f.close()
+    return
+
+def checkSubscription(subName, userName):
+    f = open("/users/" + userName + "/" + subName + ".txt", r)
+    date = f.read()
+    f.close()
+    return date
 
 #----------API FRAMEWORK/PROCCESSING-------------------
 app = Flask(__name__)
@@ -84,12 +103,29 @@ def helloWorld():
     print (returnObject.data())
     return returnObject
 
-@app.route("/getSubscriptions/<customerID>")
-def getAccount(customerID):
-    print getBills(customerID)
-    print ""
-    return jsonify([getBills(customerID)])
+@app.route("/getSubscriptions", methods = ['POST'])
+def getAccount():
+    for item in getBills(getCustomerID(request.data.get("username"))):
+        if "recurring_date" in item:
+            createSubscription(item.get("payee"))
+    return Response(status = 200)
 
+@app.route("/createAccount", methods = ['POST'])
+def createAccount():
+    print(request.data)
+    username = getJSON(request.data).get("username")
+    print(username)
+    os.mkdir(os.path.join("users/", username))
+    f = open(os.path.join("users/", username, "/ACCOUNT.txt"), 'w+')
+    f.write("Account:" + request.data.get("username")+ "\n")
+    f.write("customerID:" + request.data.get("customerID"))
+    f.close()
+    return Response(status = 200)
+
+@app.route("/updateSubscription", methods = ['POST'])
+def updateSubscription():
+    updateSubscription(request.subName, request.username, request.date)
+    return Response(status = 200)
 
 
 #-------------------APP EXECUTION--------------------------
