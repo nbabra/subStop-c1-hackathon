@@ -1,5 +1,9 @@
 'use strict';
 
+//this is where we periodically check the number of 
+//times a user has visited a certai subscription service
+//deployed using AWS Lambda + Serverless
+
 module.exports.hello = (event, context, callback) => {
   const response = {
     statusCode: 200,
