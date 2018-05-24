@@ -1,8 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 import json, requests, os, sqlite3
 from collections import OrderedDict
-import operator, urllib, sys
+import operator, urllib, sys, tinys3
+
+
 APIKEY = { 'key': '7ab1c5c2151720f0b4104d7a9a2d7b9f'}
+S3_ACCESS_KEY = "AKIAJ2EIURX2ZI3SQNPA"
+S3_SECRET_KEY = "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"
+
 #----------HELPER FUNCTIONS----------------
 def getJSON(incomingRequest):
     requestBody =  json.loads((incomingRequest).decode("utf-8"))
@@ -76,6 +81,12 @@ def createSubscription(subName, userName, date = 1):
     f.close()
     return
 
+def uploadAccountToS3Account(userName, filename):
+    conn = tinys3.Connection(S3_ACCESS_KEY,S3_SECRET_KEY)
+    f = open(filename,'rb')
+    conn.upload("/users/" + userName + "/" + filename,f,'substop')
+    f.close()
+
 def updateSubscription(subName, userName, date):
     if(os.path.isfile("/users/" + userName + "/" + subName + ".txt")== False):
         return
@@ -112,15 +123,14 @@ def getAccount():
 
 @app.route("/createAccount", methods = ['POST'])
 def createAccount():
-    print(request.data)
     username = getJSON(request.data).get("username")
-    print(username)
-    os.mkdir(os.path.join("users/", username))
-    f = open(os.path.join("users/", username, "/ACCOUNT.txt"), 'w+')
-    f.write("Account:" + request.data.get("username")+ "\n")
-    f.write("customerID:" + request.data.get("customerID"))
+    customerID = getJSON(request.data).get("customerID")
+    f = open("ACCOUNT.txt", 'w+')
+    f.write("username:" + username + "\n")
+    f.write("customerID:" + customerID)
     f.close()
-    os.chdir("..")
+    uploadAccountToS3Account(username, "ACCOUNT.txt")
+    os.remove("ACCOUNT.txt")
     return Response(status = 200)
 
 @app.route("/updateSubscription", methods = ['POST'])
