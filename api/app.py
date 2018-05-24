@@ -120,6 +120,7 @@ def createAccount():
     f.write("Account:" + request.data.get("username")+ "\n")
     f.write("customerID:" + request.data.get("customerID"))
     f.close()
+    os.chdir("..")
     return Response(status = 200)
 
 @app.route("/updateSubscription", methods = ['POST'])
