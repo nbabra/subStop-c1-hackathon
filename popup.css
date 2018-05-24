@@ -1,5 +1,13 @@
 body {
-    min-width:400px;
+    min-width:300px;
     min-height:500px ;
 }
 
+.navbar-item{
+	left: 10px;
+	color:white; 
+}
+
+.navbar {
+	color: #2B4162;
+}
