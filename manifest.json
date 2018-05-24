@@ -16,11 +16,12 @@
       "128": "icon128.png"
     }, 
 
-    "default_popup" : "index.html"
+    "default_popup" : "popup.html"
   },
 
   "permissions" : [
     "tabs"
   ], 
+
   "manifest_version": 2
 }
