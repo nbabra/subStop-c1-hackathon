@@ -1,3 +1,4 @@
+var matchedName = null; 
 
 //get href 
 var firstHref = $("a[href^='http']").eq(0).attr("href");
@@ -35,14 +36,42 @@ function parseUrlString(url) {
 
     var urlToMatch = String(url);
 
-    var matchedName = regex.exec(urlToMatch)[1];
+    matchedName = regex.exec(urlToMatch)[1];
 
     console.log("Parsed: " + matchedName);
 
 }
 
+//checks if valid url
+if (matchedName != null) {
+    checkIfSubscription(matchedName); 
+} else {
+    console.log("Error! Invalid URL");
+}
+
+
+
+//make http request to api and check if this is a subscription (true or false)
 function checkIfSubscription(currentSite) {
+
+    /*check if parameter is a subscription - query api
+
+    *NO - ignore - dont send any message or notify user
+    *YES -->
+        *Get # times visited from api
+        *update that value 
+        *
+    */
+
 
 }
 
-//get 
+//----EVERY THREE MPNEHTS - AWS LAMBDA FUNCTIONALITY----
+/*
+    *tell user how many times they've visited this site/service
+    *if number below certain threshold - reccommend to user that they should consider unsubscribing
+        --we should ideally only recommend if they havent already unsubscribed
+        --should send email to the user at this three month mark detailing the reccomendation
+    *clear the logged data and send back to server
+*/ 
+ 
