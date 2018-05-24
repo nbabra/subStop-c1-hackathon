@@ -18,5 +18,9 @@
 
     "default_popup" : "index.html"
   },
+
+  "permissions" : [
+    "tabs"
+  ], 
   "manifest_version": 2
 }
