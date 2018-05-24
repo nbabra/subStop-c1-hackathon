@@ -66,7 +66,7 @@ function checkIfSubscription(currentSite) {
 
 }
 
-//----EVERY THREE MPNEHTS - AWS LAMBDA FUNCTIONALITY----
+//----EVERY 45 DAYS - AWS LAMBDA FUNCTIONALITY----
 /*
     *tell user how many times they've visited this site/service
     *if number below certain threshold - reccommend to user that they should consider unsubscribing
