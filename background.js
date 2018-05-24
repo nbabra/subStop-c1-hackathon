@@ -1,9 +1,12 @@
-$(document).ready(function () {
-    chrome.tabs.getSelected(null, function(tab) {
-        var link = document.createElement("a"); 
-        link.href = tab.url; 
-        $('#host').html("Host: " + link.hostname); 
-    })
+var currentURL;
 
-})
+chrome.tabs.query({'active': true, 'windowId': chrome.windows.WINDOW_ID_CURRENT}, 
+function(tabs){
+	getCurrentURL(tabs[0].url);
+});
 
+function getCurrentURL(tab){
+	currentURL = tab;
+}
+
+console.log(currentUrl);
