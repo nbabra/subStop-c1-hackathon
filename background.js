@@ -1,12 +1,48 @@
-var currentURL;
 
-chrome.tabs.query({'active': true, 'windowId': chrome.windows.WINDOW_ID_CURRENT}, 
-function(tabs){
-	getCurrentURL(tabs[0].url);
-});
+//get href 
+var firstHref = $("a[href^='http']").eq(0).attr("href");
 
-function getCurrentURL(tab){
-	currentURL = tab;
+
+var parser = document.createElement("a"); 
+
+//create parser element
+parser.href = firstHref; 
+
+//call function to parse  the url string
+createNewParser(parser); 
+
+
+//function to parse url into different elements
+function createNewParser(newParser) {
+
+    newParser.protocol; // => "http:"
+    newParser.hostname; // => "example.com"
+    newParser.port;     // => "3000"
+    newParser.pathname; // => "/pathname/"
+    newParser.search;   // => "?search=test"
+    newParser.hash;     // => "#hash"
+    newParser.host;     // => "example.com:3000"
+
+    console.log("Host Name: " + newParser.hostname);  
+
+    parseUrlString(newParser.hostname);
+} 
+
+function parseUrlString(url) {
+
+    //regex pattern to match    
+    var regex = /\.(.*?)\./;
+
+    var urlToMatch = String(url);
+
+    var matchedName = regex.exec(urlToMatch)[1];
+
+    console.log("Parsed: " + matchedName);
+
 }
 
-console.log(currentUrl);
+function checkIfSubscription(currentSite) {
+
+}
+
+//get 

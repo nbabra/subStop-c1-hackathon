@@ -10,6 +10,8 @@
   },
 
 
+  "manifest_version": 2,
+
   "browser_action": {
     "default_icon": {
       "16": "icon48.png",
@@ -18,5 +20,18 @@
     },
     "default_popup": "popup.html"
   },
-  "manifest_version": 2
+
+  "permissions": [
+    "activeTab", 
+    "tabs"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["jquery-3.3.1.min.js", "background.js"]
+    }
+  ]
 }
