@@ -1,8 +1,9 @@
+
 from flask import Flask, request, jsonify, Response
 import json, requests, os, sqlite3
 from collections import OrderedDict
 import operator, urllib, sys, tinys3
-
+from boto.s3.connection import S3Connection
 
 APIKEY = { 'key': '7ab1c5c2151720f0b4104d7a9a2d7b9f'}
 S3_ACCESS_KEY = "AKIAJ2EIURX2ZI3SQNPA"
@@ -12,131 +13,91 @@ S3_SECRET_KEY = "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"
 def getJSON(incomingRequest):
     requestBody =  json.loads((incomingRequest).decode("utf-8"))
     return requestBody
-def getResponseContent(response):
-    return response[1: len(response) -1]
-def parse(url):
-    try:
-        parsed_url_components = url.split('//')
-        sublevel_split = parsed_url_components[1].split('/', 1)
-        domain = sublevel_split[0].replace("www.", "")
-        return domain
-    except IndexError:
-        print ("URL format error!")
-def analyze(results):
-    prompt = input("[.] Type <c> to print or <p> to plot\n[>] ")
-    if prompt == "c":
-        # print(results.items())
-        for site, count in results.items():
-            print (site, count)
-    elif prompt == "p":
-        plt.bar(range(len(results)), results.values(), align='edge')
-        plt.xticks(rotation=45)
-        plt.xticks(range(len(results)), results.keys())
-        plt.show()
-    else:
-        print ("[.] Uh?")
-        quit()
-
-def getHistory():
-    #path to user's history database (Chrome)
-    data_path = os.path.expanduser('~').replace("\\", "\\\\")
-    data_path = data_path + ("\\AppData\\Local\\Google\Chrome\\User Data\\Default") #.replace("\\", "\\\\")
-    files = os.listdir(data_path)
-    history_db = os.path.join(data_path, 'history')
-    #querying the db
-    c = sqlite3.connect(history_db)
-    cursor = c.cursor()
-    select_statement = "SELECT urls.url, urls.visit_count FROM urls, visits WHERE urls.id = visits.url;"
-    cursor.execute(select_statement)
-    results = cursor.fetchall() #tuple
-    # print (results )
-    # return "200"
-    sites_count = {} #dict makes iterations easier :D
-    for url, count in results:
-        url = parse(url)
-        if url in sites_count:
-            sites_count[url] += 1
-        else:
-            sites_count[url] = 1
-    sites_count_sorted = OrderedDict(sorted(sites_count.items(), key=operator.itemgetter(1), reverse=True))
-    analyze (sites_count_sorted)
-    print("200")
-    rawStringJson = (str(dict(sites_count_sorted.items()))).replace("'", '"')
-    print(rawStringJson)
-    return rawStringJson
 
 def getBills(customerID):
     url = "http://api.reimaginebanking.com/customers/" + customerID + "/bills?"
     url = url + urllib.urlencode(APIKEY)
     response = requests.get(url)
-    #print getResponseContent(response.content)
     return json.loads(response.content)
 
 def getSubscriptions(responseBody):
     return responseBody.get("recurring_date")
 
-def createSubscription(subName, userName, date = 1):
-    f = open("/users/" + userName + "/" + subName + ".txt", w)
-    f.write(date)
-    f.close()
-    return
+def createSubscription(subName, body):
+    filename = subName + ".json"
+    with open(filename,"w") as f:
+        json.dump(body, f)
+    return filename
 
-def uploadAccountToS3Account(userName, filename):
+def uploadToS3Account(userName, filename):
     conn = tinys3.Connection(S3_ACCESS_KEY,S3_SECRET_KEY)
     f = open(filename,'rb')
     conn.upload("/users/" + userName + "/" + filename,f,'substop')
     f.close()
 
 def updateSubscription(subName, userName, date):
-    if(os.path.isfile("/users/" + userName + "/" + subName + ".txt")== False):
+    if(os.path.isfile("/users/" + userName + "/" + subName + ".txt") == False):
         return
-    f = open("/users/" + userName + "/" + subName + ".txt", w)
+    filename = subname + ".txt"
+    f = open(filename, "w")
     f.write(date)
     f.close()
-    return
+    return filename
 
-def checkSubscription(subName, userName):
-    f = open("/users/" + userName + "/" + subName + ".txt", r)
-    date = f.read()
-    f.close()
-    return date
+def getCustomerID(username):
+    response = requests.get("https://s3.amazonaws.com/substop/users/" + username + "/ACCOUNT.json")
+    return response.json().get("customerID")
 
 #----------API FRAMEWORK/PROCCESSING-------------------
 app = Flask(__name__)
 @app.route("/")
 def home():
-    return "Hello World!"
+    return "WELCOME TO SUBSTOP API! DOCUMENTATION COMING SOON"
 
-@app.route("/getHistory", methods = ['POST'])
-def helloWorld():
-    returnObject =  jsonify(getHistory())
-    print('FJKS:DFJSKD:FJKSD:FJKS:D')
-    print (returnObject.data())
-    return returnObject
 
-@app.route("/getSubscriptions", methods = ['POST'])
-def getAccount():
-    for item in getBills(getCustomerID(request.data.get("username"))):
+@app.route("/setSubscriptions", methods = ['POST']) #username, body
+def setSubscriptions():
+    username = getJSON(request.data).get("username")
+    ###CONFIGURE BODY
+    body = getJSON(request.data)
+    del body['username']
+    for item in getBills(getCustomerID(username)):
         if "recurring_date" in item:
-            createSubscription(item.get("payee"))
+            body = {"date": "date"}
+            filename = createSubscription(item.get("payee"), body)
+            uploadToS3Account(username, filename)
+            os.remove(filename)
     return Response(status = 200)
 
-@app.route("/createAccount", methods = ['POST'])
+@app.route("/createAccount", methods = ['POST']) #username, body
 def createAccount():
     username = getJSON(request.data).get("username")
-    customerID = getJSON(request.data).get("customerID")
-    f = open("ACCOUNT.txt", 'w+')
-    f.write("username:" + username + "\n")
-    f.write("customerID:" + customerID)
-    f.close()
-    uploadAccountToS3Account(username, "ACCOUNT.txt")
-    os.remove("ACCOUNT.txt")
+    body =  getJSON(request.data)
+    del body['username']
+    with open("ACCOUNT.json","w") as f:
+        json.dump(body, f)
+    uploadToS3Account(username, "ACCOUNT.json")
+    os.remove("ACCOUNT.json")
     return Response(status = 200)
 
-@app.route("/updateSubscription", methods = ['POST'])
+@app.route("/updateSubscription", methods = ['POST']) #username, subname, body
 def updateSubscription():
-    updateSubscription(request.subName, request.username, request.date)
+    username = getJSON(request.data).get("username")
+    subname = getJSON(request.data).get("subname")
+    body = getJSON(request.data)
+    del body['username']
+    del body['subname']
+    filename = createSubscription(subname, body)
+    uploadToS3Account(username, filename)
+    os.remove(filename)
     return Response(status = 200)
+
+@app.route("/checkSubscription/<username>/<subname>") #username, subname
+def checkSubscription(username, subname):
+    response = requests.get("https://s3.amazonaws.com/substop/users/" + username + "/" +subname + ".json")
+    return response.json().get("date")
+
+
 
 
 #-------------------APP EXECUTION--------------------------
