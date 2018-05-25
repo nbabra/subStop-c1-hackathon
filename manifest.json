@@ -4,9 +4,9 @@
   "description":
     "A Chrome extension designed in order to help users save money by tracking which subscription services they are not using.",
   "icons": {
-    "16": "icon48.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "16": "black.png",
+    "48": "black.png",
+    "128": "black.png"
   },
 
 
@@ -14,9 +14,9 @@
 
   "browser_action": {
     "default_icon": {
-      "16": "icon48.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
+      "16": "black.png",
+      "48": "black.png",
+      "128": "black.png"
     },
     "default_popup": "popup.html"
   },
