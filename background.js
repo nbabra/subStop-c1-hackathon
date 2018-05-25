@@ -26,8 +26,14 @@ function createNewParser(newParser) {
 
     console.log("Host Name: " + newParser.hostname);  
 
+    returnHostName(newParser.hostname);
+
     parseUrlString(newParser.hostname);
 } 
+
+function returnHostName(name) {
+    return name; 
+}
 
 function parseUrlString(url) {
 
@@ -42,15 +48,7 @@ function parseUrlString(url) {
 
 }
 
-//checks if valid url
-// if (matchedName != null) {
-
-//     makePost(matchedName); //netflix, amazon
-// } else {
-//     console.log("Error! Invalid URL");
-// }
-
-    makePost(matchedName);
+makePost(matchedName);
 
 //make http request to api and check if this is a subscription (true or false)
 function makePost(currentSite) {
@@ -75,47 +73,7 @@ function makePost(currentSite) {
     var postRequestUrl = "https://276a4e99.ngrok.io/" + updateSubscription; 
     var currentDate = Date.now(); 
 
-    // $.post(requestUrl,
-
-    // {
-    //     username: userName, //i.e "Johnn"
-    //     subname:  currentSite, //i.e. Netflix
-    //     body:  String(currentDate) 
-
-    // },
-
-    // function(data,status){
-         
-    //     alert("Data: " + data + "\nStatus: " + status);
-    //     console.log(data);
-
-    // });
-
-
     console.log("POST URL: " + postRequestUrl);
-
-    // $.ajax({
-    //     url: postRequestUrl,
-    //     type: 'post',
-
-    //     data: {
-    //         "username" : userName, //i.e "Johnn"
-    //         "subname" :  currentSite, //i.e. Netflix
-    //         "date" :  String(currentDate) 
-    //     },
-    //     // headers: {
-
-    //     //     "Content-Type": "application/json",
-
-    //     // },
-
-    //     dataType: 'json',
-
-    //     success: function (data) {
-    //         console.log(data);
-    //     }
-    // });
-
 
     var xhr = new XMLHttpRequest();
         var url = postRequestUrl;
@@ -137,42 +95,16 @@ function makePost(currentSite) {
 
 }
 
-
 function getDateFromGet(partialRequestURL, usernameAcc, subname) { 
 
-    var checkSubscription = "checkSubscription"
+    var checkSubscription = "checkSubscription";
 
     var dateRequestUrl = partialRequestURL + checkSubscription + "/" + usernameAcc + "/" + subname;
 
 
     console.log("GET URL: " + dateRequestUrl);
 
-//     $.get(dateRequestUrl,
-//           // url
-//     function (data, textStatus, jqXHR) {  // success callback
-        
-//         alert('status: ' + textStatus + ', data:' + data); //do something with the data
-
-//         console.log(textStatus);
-//   });
-
     var authHeader = "auth header";
-
-    // $.ajax({
-
-    //     url: dateRequestUrl,
-
-    //     data: { signature: authHeader },
-    //     type: "GET",
-
-    //     beforeSend: function(xhr){xhr.setRequestHeader('X-Test-Header', 'test-value');},
-
-    //     success: function() { 
-    //         console.log('Success! ' + authHeader);
-    //         alert('Success!' + authHeader); 
-    //     }
-
-    // });
 
     $.ajax({
         url: dateRequestUrl,
@@ -181,30 +113,56 @@ function getDateFromGet(partialRequestURL, usernameAcc, subname) {
         success: function(res) {
             console.log("GET REPSONSE: " + res);
             //alert(res);
-            checkForNotificationDisplay(res); 
-
-            
+            checkForNotificationDisplay(res, subname);             
         }
     });
 }
 
- 
-function checkForNotificationDisplay(getResponse) {
+//checks if a notification should be sent 
+function checkForNotificationDisplay(getResponse, subname) {
     //subtract reponse date value from current date time value 
 
     var currentDateTime = Date.now()//returns UTC value 
 
     var visitedTime = getResponse; 
 
-    var thresholdValue = 0; //change
+    var thresholdValue = 2592000; 
 
     if ((currentDateTime - visitedTime) > thresholdValue) {
 
         //send notification through api call
         //make post request to update the date value
+        alert("You should consider unsubscribing from"); //edit message later
+
+
+        //make another POST Request to update the date field
+
+             var updateSubscription = "updateSubscription"; 
+             var postRequestUrl = "https://276a4e99.ngrok.io/" + updateSubscription; 
+             var userName = "testUser"; 
+
+
+        
+            var xhr = new XMLHttpRequest();
+            var url = postRequestUrl;
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                console.log("SUCCESS POST REQUEST");
+                var json = JSON.parse(xhr.responseText);
+                console.log(json);
+            }
+            };
+
+            var data = JSON.stringify({"username": userName, "subname": subname, "date": String(currentDateTime)});
+            xhr.send(data);
+        
+
     }
     
 }   
+
 
 //----EVERY 45 DAYS - AWS LAMBDA FUNCTIONALITY----
 /*
