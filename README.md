@@ -10,7 +10,7 @@ REQUEST: POST
   BODY: {
           "username": "username",
           "customerID": "customerID",
-          "email": "email"
+          "phone": "phone"
          }
          
   RETURNS EMPTY JSON (STATUS CODE = 200)
@@ -53,7 +53,16 @@ REQUEST: GET
     Accesses user folder based on username and contents of subname.json and returns HTML of date value held in subname.json
     
 
+**Update Subscription: http://18.221.61.221:5000/sendText**
+REQUEST: POST
+  BODY: {
+          "username": "username",
+         }
+         
+  RETURNS EMPTY JSON (STATUS CODE = 200)
 
+  Function: 
+    Texts user alerting them of their unused subscriptions
 
 
 

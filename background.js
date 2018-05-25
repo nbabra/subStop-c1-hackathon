@@ -5,6 +5,36 @@ var userID = null;
 var firstHref = $("a[href^='http']").eq(0).attr("href");
 
 
+function createAccount() {
+
+    var createAccountUrl = "https://276a4e99.ngrok.io/createAccount"; 
+    var name = "testUser"; 
+    var customerId = document.getElementById("customerNum"); 
+    var phoneNumber  = document.getElementById("phonenumberField"); 
+    
+    alert("sTUFF HAPPENED")
+    console.log(customerId); 
+    console.log(phoneNumber);
+
+    var xhr = new XMLHttpRequest();
+        var url = createAccountUrl;
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log("SUCCESS POST REQUEST");
+            var json = JSON.parse(xhr.responseText);
+            console.log(json);
+        }
+        };
+
+        var data = JSON.stringify({"username": name, "customerID": customerId, "phone":phoneNumber});
+        xhr.send(data);
+
+
+
+
+} 
 var parser = document.createElement("a"); 
 
 //create parser element
@@ -128,37 +158,51 @@ function checkForNotificationDisplay(getResponse, subname) {
 
     var thresholdValue = 2592000; 
 
-    if ((currentDateTime - visitedTime) > thresholdValue) {
-
-        //send notification through api call
-        //make post request to update the date value
-        alert("You should consider unsubscribing from"); //edit message later
-
-
-        //make another POST Request to update the date field
-
-             var updateSubscription = "updateSubscription"; 
-             var postRequestUrl = "https://276a4e99.ngrok.io/" + updateSubscription; 
-             var userName = "testUser"; 
-
+    if ((currentDateTime - visitedTime) > thresholdValue) { 
 
         
-            var xhr = new XMLHttpRequest();
-            var url = postRequestUrl;
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                console.log("SUCCESS POST REQUEST");
-                var json = JSON.parse(xhr.responseText);
-                console.log(json);
-            }
-            };
+        var sendText = "sendText"; 
+        var textRequestUrl = "https://276a4e99.ngrok.io/" + sendText; 
 
-            var data = JSON.stringify({"username": userName, "subname": subname, "date": String(currentDateTime)});
-            xhr.send(data);
-        
+        //send text to user 
+        var xhr2 = new XMLHttpRequest();
+        var url2 = textRequestUrl;
+        xhr2.open("POST", url2, true);
+        xhr2.setRequestHeader("Content-Type", "application/json");
+        xhr2.onreadystatechange = function () {
+        if (xhr2.readyState === 4 && xhr2.status === 200) {
+            console.log("SUCCESS POST REQUEST FOR TEXT");
+            var json = JSON.parse(xhr2.responseText);
+            console.log(json);
+        }
+        };
 
+        //only takes user name
+        var data = JSON.stringify({"username": userName});
+        xhr2.send(data);
+
+    //---------------------------------------------------------------------------------
+        var updateSubscription = "updateSubscription"; 
+        var postRequestUrl = "https://276a4e99.ngrok.io/" + updateSubscription; 
+        var userName = "testUser"; 
+
+        //make another POST Request to update the date field with the new value (current time)
+         
+
+                var xhr = new XMLHttpRequest();
+                var url = postRequestUrl;
+                xhr.open("POST", url, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log("SUCCESS POST REQUEST");
+                    var json = JSON.parse(xhr.responseText);
+                    console.log(json);
+                }
+                };
+
+                var data = JSON.stringify({"username": userName, "subname": subname, "date": String(currentDateTime)});
+                xhr.send(data);
     }
     
 }   
