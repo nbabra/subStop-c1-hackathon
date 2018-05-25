@@ -75,7 +75,7 @@ def createAccount():
     username = getJSON(request.data).get("username")
     body =  getJSON(request.data)
     del body['username']
-    with open("filename","w") as f:
+    with open("ACCOUNT.json","w") as f:
         json.dump(body, f)
     uploadToS3Account(username, "ACCOUNT.json")
     os.remove("ACCOUNT.json")
