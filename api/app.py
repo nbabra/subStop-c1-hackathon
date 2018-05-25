@@ -7,9 +7,9 @@ import operator, urllib, sys, tinys3
 import smtplib
 
 
-APIKEY = { 'key': 'e705696f2fdd186ff04c68829075d30c'}
-S3_ACCESS_KEY = "AKIAJS5SXHI5J3QQLDEA"
-S3_SECRET_KEY = "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"
+APIKEY = { 'key': ''}
+S3_ACCESS_KEY = ""
+S3_SECRET_KEY = ""
 
 mail_settings = {
     "MAIL_SERVER": 'smtp@gmail.com',
