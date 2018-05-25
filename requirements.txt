@@ -1,4 +1,0 @@
-flask
-sqlite3
-tinys3
-boto3
