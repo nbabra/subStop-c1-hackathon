@@ -19,13 +19,14 @@ def getBills(customerID):
     url = "http://api.reimaginebanking.com/customers/" + customerID + "/bills?"
     url = url + urllib.urlencode(APIKEY)
     response = requests.get(url)
+    print response
     return json.loads(response.content)
 
 def getSubscriptions(responseBody):
     return responseBody.get("recurring_date")
 
 def createSubscription(subName, body):
-    filename = subName + ".json"
+    filename = subName.lower() + ".json"
     with open(filename,"w") as f:
         json.dump(body, f)
     return filename
@@ -36,18 +37,20 @@ def uploadToS3Account(userName, filename):
     conn.upload("/users/" + userName + "/" + filename,f,'substop18')
     f.close()
 
-def updateSubscription(subName, userName, date):
-    if(os.path.isfile("/users/" + userName + "/" + subName + ".txt") == False):
-        return
-    filename = subname + ".txt"
-    f = open(filename, "w")
-    f.write(date)
-    f.close()
+def updateSubscription(subname, userName, body):
+    response = requests.get("https://s3-us-west-1.amazonaws.com/substop18/users/" + userName + "/" + subname.lower() + ".json")
+    if(response.status_code != 200):
+        print "postpajtdjfidasopjfisapdji"
+        return "NULL"
+    filename = subname.lower() + ".json"
+    with open(filename, "w") as f:
+        json.dump(body, f)
     return filename
 
 def getCustomerID(username):
-    response = requests.get("https://s3.amazonaws.com/substop18/users/" + username + "/ACCOUNT.json")
-    return response.json().get("customerID")
+    response = requests.get("https://s3-us-west-1.amazonaws.com/substop18/users/" + username + "/ACCOUNT.json")
+    temp = json.loads(response.content)
+    return temp.get("customerID")
 
 #----------API FRAMEWORK/PROCCESSING-------------------
 app = Flask(__name__)
@@ -63,14 +66,14 @@ def setSubscriptions():
     body = getJSON(request.data)
     del body['username']
     for item in getBills(getCustomerID(username)):
+        print item
         if "recurring_date" in item:
-            body = {"date": "date"}
             filename = createSubscription(item.get("payee"), body)
             uploadToS3Account(username, filename)
             os.remove(filename)
     return Response(status = 200)
 
-@app.route("/createAccount", methods = ['POST']) #username, body (needs customerID)
+@app.route("/createAccount", methods = ['POST'])
 def createAccount():
     username = getJSON(request.data).get("username")
     body =  getJSON(request.data)
@@ -82,20 +85,23 @@ def createAccount():
     return Response(status = 200)
 
 @app.route("/updateSubscription", methods = ['POST']) #username, subname, body(date and whatever else)
-def updateSubscription():
+def updateSubscriptions():
     username = getJSON(request.data).get("username")
     subname = getJSON(request.data).get("subname")
+    subname = subname.lower()
     body = getJSON(request.data)
     del body['username']
     del body['subname']
-    filename = createSubscription(subname, body)
+    filename = updateSubscription(subname, username, body)
+    if(filename=="NULL"):
+        return Response(status = 400)
     uploadToS3Account(username, filename)
     os.remove(filename)
     return Response(status = 200)
 
 @app.route("/checkSubscription/<username>/<subname>") #username, subname #returns date
 def checkSubscription(username, subname):
-    response = requests.get("https://s3.amazonaws.com/substop18/users/" + username + "/" +subname + ".json")
+    response = requests.get("https://s3-us-west-1.amazonaws.com/substop18/users/" + username + "/" +subname.lower() + ".json")
     return response.json().get("date")
 
 #-------------------APP EXECUTION--------------------------
