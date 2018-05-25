@@ -128,37 +128,31 @@ function checkForNotificationDisplay(getResponse, subname) {
 
     var thresholdValue = 2592000; 
 
-    if ((currentDateTime - visitedTime) > thresholdValue) {
+    if ((currentDateTime - visitedTime) > thresholdValue) { 
 
-        //send notification through api call
-        //make post request to update the date value
-        alert("You should consider unsubscribing from"); //edit message later
+        //send text to user 
 
+        
 
-        //make another POST Request to update the date field
-
+        //make another POST Request to update the date field with the new value (current time)
              var updateSubscription = "updateSubscription"; 
              var postRequestUrl = "https://276a4e99.ngrok.io/" + updateSubscription; 
              var userName = "testUser"; 
 
+                var xhr = new XMLHttpRequest();
+                var url = postRequestUrl;
+                xhr.open("POST", url, true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log("SUCCESS POST REQUEST");
+                    var json = JSON.parse(xhr.responseText);
+                    console.log(json);
+                }
+                };
 
-        
-            var xhr = new XMLHttpRequest();
-            var url = postRequestUrl;
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                console.log("SUCCESS POST REQUEST");
-                var json = JSON.parse(xhr.responseText);
-                console.log(json);
-            }
-            };
-
-            var data = JSON.stringify({"username": userName, "subname": subname, "date": String(currentDateTime)});
-            xhr.send(data);
-        
-
+                var data = JSON.stringify({"username": userName, "subname": subname, "date": String(currentDateTime)});
+                xhr.send(data);
     }
     
 }   
