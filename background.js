@@ -11,7 +11,8 @@ function createAccount() {
     var name = "testUser"; 
     var customerId = document.getElementById("customerNum"); 
     var phoneNumber  = document.getElementById("phonenumberField"); 
-
+    
+    alert("sTUFF HAPPENED")
     console.log(customerId); 
     console.log(phoneNumber);
 
