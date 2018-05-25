@@ -23,7 +23,9 @@
 
   "permissions": [
     "activeTab", 
-    "tabs"
+    "tabs",
+    "webRequest",
+    "<all_urls>"
   ],
 
   "content_scripts": [
