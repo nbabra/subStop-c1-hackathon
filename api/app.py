@@ -1,14 +1,25 @@
 
 from flask import Flask, request, jsonify, Response
+from flask_mail import Mail, Message
 import json, requests, os, sqlite3
 from collections import OrderedDict
 import operator, urllib, sys, tinys3
-import boto3
-from boto.s3.connection import S3Connection
+import smtplib
 
-APIKEY = { 'key': ''}
-S3_ACCESS_KEY = ""
-S3_SECRET_KEY = ""
+
+APIKEY = { 'key': 'e705696f2fdd186ff04c68829075d30c'}
+S3_ACCESS_KEY = "AKIAJS5SXHI5J3QQLDEA"
+S3_SECRET_KEY = "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"
+
+mail_settings = {
+    "MAIL_SERVER": 'smtp@gmail.com',
+    "MAIL_PORT": 465,
+    "MAIL_USE_TLS": False,
+    "MAIL_USE_SSL": True,
+    "MAIL_USERNAME": 'substop18@gmail.com',
+    "MAIL_PASSWORD": 'substop123'
+}
+
 
 #----------HELPER FUNCTIONS----------------
 def getJSON(incomingRequest):
@@ -52,8 +63,17 @@ def getCustomerID(username):
     temp = json.loads(response.content)
     return temp.get("customerID")
 
+def getPhoneNumber(username):
+    response = requests.get("https://s3-us-west-1.amazonaws.com/substop18/users/" + username + "/ACCOUNT.json")
+    temp = json.loads(response.content)
+    return temp.get("phone")
+
 #----------API FRAMEWORK/PROCCESSING-------------------
 app = Flask(__name__)
+
+app.config.update(mail_settings)
+mail = Mail(app)
+
 @app.route("/")
 def home():
     return "WELCOME TO SUBSTOP API! DOCUMENTATION COMING SOON"
@@ -84,8 +104,9 @@ def createAccount():
     os.remove("ACCOUNT.json")
     return Response(status = 200)
 
-@app.route("/updateSubscription", methods = ['POST']) #username, subname, body(date and whatever else)
+@app.route("/updateSubscription", methods = ['POST']) #username, subname, body(date and phone number whatever else)
 def updateSubscriptions():
+    print request.data
     username = getJSON(request.data).get("username")
     subname = getJSON(request.data).get("subname")
     subname = subname.lower()
@@ -104,6 +125,22 @@ def checkSubscription(username, subname):
     response = requests.get("https://s3-us-west-1.amazonaws.com/substop18/users/" + username + "/" +subname.lower() + ".json")
     return response.json().get("date")
 
+@app.route("/sendText", methods = ['POST'])
+def sendText():
+    username = getJSON(request.data).get("username")
+    server = smtplib.SMTP( "smtp.gmail.com", 587 )
+
+    server.starttls()
+
+    server.login( 'substop18@gmail.com', 'substop123' )
+
+    # Send text message through SMS gateway of destination number
+    phonePath = getPhoneNumber(username) + "@pm.sprint.com"
+    server.sendmail( '2405352040', phonePath, 'Check Subscription! You have unused Subscription payments!')
+
+    return Response(status = 200)
+
+
 #-------------------APP EXECUTION--------------------------
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(debug = True, port = 80)
