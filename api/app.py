@@ -1,14 +1,14 @@
+
 from flask import Flask, request, jsonify, Response
 import json, requests, os, sqlite3
 from collections import OrderedDict
 import operator, urllib, sys, tinys3
+import boto3
 from boto.s3.connection import S3Connection
 
-
-
-APIKEY = { 'key': '7ab1c5c2151720f0b4104d7a9a2d7b9f'}
-S3_ACCESS_KEY = "AKIAJ2EIURX2ZI3SQNPA"
-S3_SECRET_KEY = "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"
+APIKEY = { 'key': ''}
+S3_ACCESS_KEY = ""
+S3_SECRET_KEY = ""
 
 #----------HELPER FUNCTIONS----------------
 def getJSON(incomingRequest):
@@ -33,7 +33,7 @@ def createSubscription(subName, body):
 def uploadToS3Account(userName, filename):
     conn = tinys3.Connection(S3_ACCESS_KEY,S3_SECRET_KEY)
     f = open(filename,'rb')
-    conn.upload("/users/" + userName + "/" + filename,f,'substop')
+    conn.upload("/users/" + userName + "/" + filename,f,'substop18')
     f.close()
 
 def updateSubscription(subName, userName, date):
@@ -46,7 +46,7 @@ def updateSubscription(subName, userName, date):
     return filename
 
 def getCustomerID(username):
-    response = requests.get("https://s3.amazonaws.com/substop/users/" + username + "/ACCOUNT.json")
+    response = requests.get("https://s3.amazonaws.com/substop18/users/" + username + "/ACCOUNT.json")
     return response.json().get("customerID")
 
 #----------API FRAMEWORK/PROCCESSING-------------------
@@ -56,7 +56,7 @@ def home():
     return "WELCOME TO SUBSTOP API! DOCUMENTATION COMING SOON"
 
 
-@app.route("/setSubscriptions", methods = ['POST']) #username, body
+@app.route("/setSubscriptions", methods = ['POST']) #username, body  GETS all subscriptions
 def setSubscriptions():
     username = getJSON(request.data).get("username")
     ###CONFIGURE BODY
@@ -70,18 +70,18 @@ def setSubscriptions():
             os.remove(filename)
     return Response(status = 200)
 
-@app.route("/createAccount", methods = ['POST']) #username, body
+@app.route("/createAccount", methods = ['POST']) #username, body (needs customerID)
 def createAccount():
     username = getJSON(request.data).get("username")
     body =  getJSON(request.data)
     del body['username']
-    with open("ACCOUNT.json","w") as f:
+    with open("filename","w") as f:
         json.dump(body, f)
     uploadToS3Account(username, "ACCOUNT.json")
     os.remove("ACCOUNT.json")
     return Response(status = 200)
 
-@app.route("/updateSubscription", methods = ['POST']) #username, subname, body
+@app.route("/updateSubscription", methods = ['POST']) #username, subname, body(date and whatever else)
 def updateSubscription():
     username = getJSON(request.data).get("username")
     subname = getJSON(request.data).get("subname")
@@ -93,13 +93,10 @@ def updateSubscription():
     os.remove(filename)
     return Response(status = 200)
 
-@app.route("/checkSubscription/<username>/<subname>") #username, subname
+@app.route("/checkSubscription/<username>/<subname>") #username, subname #returns date
 def checkSubscription(username, subname):
-    response = requests.get("https://s3.amazonaws.com/substop/users/" + username + "/" +subname + ".json")
+    response = requests.get("https://s3.amazonaws.com/substop18/users/" + username + "/" +subname + ".json")
     return response.json().get("date")
-
-
-
 
 #-------------------APP EXECUTION--------------------------
 if __name__ == "__main__":
