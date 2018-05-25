@@ -1,4 +1,5 @@
 var matchedName = null; 
+var userID = null; 
 
 //get href 
 var firstHref = $("a[href^='http']").eq(0).attr("href");
@@ -11,7 +12,6 @@ parser.href = firstHref;
 
 //call function to parse  the url string
 createNewParser(parser); 
-
 
 //function to parse url into different elements
 function createNewParser(newParser) {
@@ -71,8 +71,8 @@ function makePost(currentSite) {
 
     
     var updateSubscription = "updateSubscription"
-    var requestUrl = "https://94db0f79.ngrok.io/"; 
-    var postRequestUrl = "https://94db0f79.ngrok.io/" + updateSubscription; 
+    var requestUrl = "https://276a4e99.ngrok.io/"; 
+    var postRequestUrl = "https://276a4e99.ngrok.io/" + updateSubscription; 
     var currentDate = Date.now(); 
 
     // $.post(requestUrl,
@@ -158,26 +158,53 @@ function getDateFromGet(partialRequestURL, usernameAcc, subname) {
 
     var authHeader = "auth header";
 
+    // $.ajax({
+
+    //     url: dateRequestUrl,
+
+    //     data: { signature: authHeader },
+    //     type: "GET",
+
+    //     beforeSend: function(xhr){xhr.setRequestHeader('X-Test-Header', 'test-value');},
+
+    //     success: function() { 
+    //         console.log('Success! ' + authHeader);
+    //         alert('Success!' + authHeader); 
+    //     }
+
+    // });
+
     $.ajax({
-
         url: dateRequestUrl,
+        type: 'GET',
+        dataType: 'json', // added data type
+        success: function(res) {
+            console.log("GET REPSONSE: " + res);
+            //alert(res);
+            checkForNotificationDisplay(res); 
 
-        data: { signature: authHeader },
-        type: "GET",
-
-        beforeSend: function(xhr){xhr.setRequestHeader('X-Test-Header', 'test-value');},
-
-        success: function() { 
-            console.log('Success! ' + authHeader);
-            alert('Success!' + authHeader); 
+            
         }
-
     });
 }
 
-    function checkForNotificationDisplay() {
-        
+ 
+function checkForNotificationDisplay(getResponse) {
+    //subtract reponse date value from current date time value 
+
+    var currentDateTime = Date.now()//returns UTC value 
+
+    var visitedTime = getResponse; 
+
+    var thresholdValue = 0; //change
+
+    if ((currentDateTime - visitedTime) > thresholdValue) {
+
+        //send notification through api call
+        //make post request to update the date value
     }
+    
+}   
 
 //----EVERY 45 DAYS - AWS LAMBDA FUNCTIONALITY----
 /*
