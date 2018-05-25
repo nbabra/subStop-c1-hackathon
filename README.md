@@ -64,5 +64,8 @@ REQUEST: POST
   Function: 
     Texts user alerting them of their unused subscriptions
 
+**Authors:** Prajwal Choudhry, Navneeth Babra, Rishi Kalluri, Kartik Krishnan
+    
+
 
 
