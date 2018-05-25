@@ -44,15 +44,13 @@ function parseUrlString(url) {
 
 //checks if valid url
 if (matchedName != null) {
-    checkIfSubscription(matchedName); 
+    makePost(matchedName); 
 } else {
     console.log("Error! Invalid URL");
 }
 
-
-
 //make http request to api and check if this is a subscription (true or false)
-function checkIfSubscription(currentSite) {
+function makePost(currentSite) {
 
     /*check if parameter is a subscription - query api
 
@@ -62,6 +60,49 @@ function checkIfSubscription(currentSite) {
         *update that value 
         *
     */
+
+    //create request url for http request
+
+    var userName = "Johnn" //update later
+
+
+    
+    var updateSubscription = "/updateSubscription"
+    var requestUrl = "https://18.221.61.221:5000" + updateSubscription; 
+
+    var currentDate = Date.now(); 
+
+    $.post(requestUrl,
+    {
+        username: userName, //i.e "Johnn"
+        subname:  currentSite, //i.e. Netflix
+        body:  String(currentDate) 
+
+    },
+
+    function(data,status){
+        console.log(data); 
+        alert("Data: " + data + "\nStatus: " + status);
+
+
+    });
+
+    getDateFromGet(requestUrl, userName, currentSite); 
+
+}
+
+
+function getDateFromGet(partialRequestURL, usernameAcc, subname) { 
+
+    var checkSubscription = "/checkSubscription"
+
+    var dateRequestUrl = partialRequestURL + checkSubscription + "/" + usernameAcc + "/" + subname;
+
+    $.get(dateRequestUrl,  // url
+    function (data, textStatus, jqXHR) {  // success callback
+        console.log(data); 
+        alert('status: ' + textStatus + ', data:' + data); //do something with the data
+  });
 
 
 }
