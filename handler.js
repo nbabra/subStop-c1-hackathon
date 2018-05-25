@@ -4,14 +4,20 @@
 //times a user has visited a certai subscription service
 //deployed using AWS Lambda + Serverless
 
+
+
+//redploy this with new security keys from new AWS account
+
 module.exports.hello = (event, context, callback) => {
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Go Serverless v1.0! Your function executed successfully!',
-      input: event,
-    }),
-  };
+
+  // const response = {
+  //   statusCode: 200,
+  //   body: JSON.stringify({
+  //     message: 'Go Serverless v1.0! Your function executed successfully!',
+  //     input: event,
+  //   }),
+  // };
+  
 
   callback(null, response);
 
