@@ -9,7 +9,8 @@
 REQUEST: POST
   BODY: {
           "username": "username",
-          "customerID": "customerID"
+          "customerID": "customerID",
+          "email": "email"
          }
          
   RETURNS EMPTY JSON (STATUS CODE = 200)
